@@ -249,6 +249,7 @@ func New(options *Options) (*Runner, error) {
 	scanopts.StoreResponse = options.StoreResponse
 	scanopts.StoreResponseDirectory = options.StoreResponseDir
 	scanopts.OutputServerHeader = options.OutputServerHeader
+	scanopts.OutputCustomHostHeader = options.OutputCustomHostHeader
 	scanopts.ResponseHeadersInStdout = options.ResponseHeadersInStdout
 	scanopts.OutputWithNoColor = options.NoColor
 	scanopts.ResponseInStdout = options.ResponseInStdout
@@ -1313,6 +1314,26 @@ func (r *Runner) targets(hp *httpx.HTTPX, target string) chan httpx.Target {
 			for _, ip := range ips {
 				results <- httpx.Target{Host: target, CustomIP: ip}
 			}
+		case strings.HasPrefix(target, "{") && strings.HasSuffix(target, "}"):
+			tinputMap := make(map[string]string)
+			if err := json.Unmarshal([]byte(target), &tinputMap); err != nil {
+				return
+			}
+
+			var (
+				host     string
+				hostname string
+			)
+
+			if h, ok := tinputMap["host"]; ok {
+				host = h
+			}
+
+			if hn, ok := tinputMap["hostname"]; ok {
+				hostname = hn
+			}
+
+			results <- httpx.Target{Host: host, CustomHost: hostname}
 		case !stringsutil.HasPrefixAny(target, "http://", "https://") && stringsutil.ContainsAny(target, ","):
 			idxComma := strings.Index(target, ",")
 			results <- httpx.Target{Host: target[idxComma+1:], CustomHost: target[:idxComma]}
@@ -1514,6 +1535,10 @@ retry:
 		} else {
 			return Result{URL: URL.String(), Input: origInput, Timestamp: time.Now(), Err: err}
 		}
+	}
+
+	if scanopts.OutputCustomHostHeader {
+		builder.WriteString(fmt.Sprintf(" [%s]", target.CustomHost))
 	}
 
 	if scanopts.OutputStatusCode {

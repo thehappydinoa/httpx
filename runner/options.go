@@ -52,6 +52,7 @@ type ScanOptions struct {
 	OutputWebSocket           bool
 	OutputWithNoColor         bool
 	OutputMethod              bool
+	OutputCustomHostHeader	  bool
 	ResponseHeadersInStdout   bool
 	ResponseInStdout          bool
 	Base64ResponseInStdout    bool
@@ -109,6 +110,7 @@ func (s *ScanOptions) Clone() *ScanOptions {
 		OutputWebSocket:           s.OutputWebSocket,
 		OutputWithNoColor:         s.OutputWithNoColor,
 		OutputMethod:              s.OutputMethod,
+		OutputCustomHostHeader:    s.OutputCustomHostHeader,
 		ResponseHeadersInStdout:   s.ResponseHeadersInStdout,
 		ResponseInStdout:          s.ResponseInStdout,
 		Base64ResponseInStdout:    s.Base64ResponseInStdout,
@@ -201,6 +203,7 @@ type Options struct {
 	Verbose                   bool
 	NoColor                   bool
 	OutputServerHeader        bool
+	OutputCustomHostHeader    bool
 	OutputWebSocket           bool
 	ResponseHeadersInStdout   bool
 	ResponseInStdout          bool
@@ -330,6 +333,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.Asn, "asn", false, "display host asn information"),
 		flagSet.BoolVar(&options.OutputCDN, "cdn", false, "display cdn/waf in use"),
 		flagSet.BoolVar(&options.Probe, "probe", false, "display probe status"),
+		flagSet.BoolVarP(&options.OutputCustomHostHeader, "host-header", "hh", false, "display request host header"),
 	)
 
 	flagSet.CreateGroup("headless", "Headless",
